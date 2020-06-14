@@ -2334,7 +2334,6 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
 
 	// combine name and skin into a configstring
 	gi.configstring (CS_PLAYERSKINS+playernum, va("%s\\%s", ent->client->pers.netname, skin) );
-
 	// fov
 	if (deathmatch->value && ((int)dmflags->value & DF_FIXED_FOV))
 	{
@@ -2449,6 +2448,7 @@ qboolean ClientConnect (edict_t *ent, char *userinfo)
 			InitClientPersistant (ent->client);
 	}
 
+	
 	ClientUserinfoChanged (ent, userinfo);
 
 #ifdef OLDOBSERVERCODE
@@ -3138,6 +3138,8 @@ void ClientSetSkin(edict_t *ent, char *skin)
 	char	*newskin, *s;
 	int 	playernum;
 	
+	s = Info_ValueForKey (ent->client->pers.userinfo, "skin");
+	//gi.dprintf("Req ClientSetSkin	old: %s\nnew: %s\n", s, skin);
 	
 	if (!SkinListInUse())
 	{
@@ -3146,7 +3148,6 @@ void ClientSetSkin(edict_t *ent, char *skin)
 	}
 	
 	// get skin
-	s = Info_ValueForKey (ent->client->pers.userinfo, "skin");
 	
 	if (!SkinValid(ent, skin))
 	{
@@ -3163,7 +3164,6 @@ void ClientSetSkin(edict_t *ent, char *skin)
 	// combine name and skin into a configstring
 	gi.configstring (CS_PLAYERSKINS+playernum, va("%s\\%s", ent->client->pers.netname, newskin) );
 	
-	
 	Info_SetValueForKey (ent->client->pers.userinfo, "skin", newskin);
 	ent->client->ctf.goodskin = false; // We need to re-force our skin
 	return;
@@ -3171,13 +3171,17 @@ void ClientSetSkin(edict_t *ent, char *skin)
 
 void ClientOldSetSkin(edict_t *ent, char *input)
 {
-	char	*s;
+        if (!input) {
+		return;
+	}
+
+	char	*currentSkinString;
 	//char *color;
 	int 	playernum, err;
 	
 	char	dir[MAX_INFO_STRING], skin[MAX_INFO_STRING], set[MAX_INFO_STRING] ;
 	char	color, gender;
-	int 	num, dirvalid, skinvalid;
+	int 	curSkinNum, dirvalid, skinvalid;
 	int 	skinnum;
 	char	*curset;
 	
@@ -3202,10 +3206,11 @@ void ClientOldSetSkin(edict_t *ent, char *input)
 	//s = input;
 	
 	//if (!s)
-	s = Info_ValueForKey (ent->client->pers.userinfo, "skin");
+	currentSkinString = Info_ValueForKey (ent->client->pers.userinfo, "skin");
+	//gi.dprintf("ClientOldSetSkin(%s, %s)", currentSkinString, input);
 	
 	//initialize memory
-	num = -1;
+	curSkinNum = -1;
 	gender = 'u'; //unassigned
 	color = 'u'; //unassigned
 	
@@ -3217,10 +3222,10 @@ void ClientOldSetSkin(edict_t *ent, char *input)
 	skin[0] = 0;
 	
 	// See if we have only specified a skin number
-	if (sscanf(s, "%d", &skinnum))
+	if (sscanf(input, "%d", &skinnum) != 1)
 	{
 		// First, check if skin matches proper format MJD Suggest Parens
-		err = sscanf(s, "%[^/]/%[^-]-%c%c%d", dir, set, &color, &gender, &num);
+		err = sscanf(input, "%[^/]/%[^-]-%c%c%d", dir, set, &color, &gender, &curSkinNum);
 		if (err)
 		{
 			// Next, check if gender matches properly
@@ -3228,7 +3233,7 @@ void ClientOldSetSkin(edict_t *ent, char *input)
 			{
 				dirvalid = 2;
 				// Check if skin is valid, ignoring color
-				if (gender == 'f' && num <= 2 && num >= 1)
+				if (gender == 'f' && curSkinNum <= 2 && curSkinNum >= 1)
 				{
 					skinvalid = 1;
 				}
@@ -3237,7 +3242,7 @@ void ClientOldSetSkin(edict_t *ent, char *input)
 			{
 				dirvalid = 1;
 				// Check if skin is valid, ignoring color
-				if (gender == 'm' && num <= 3 && num >= 1)
+				if (gender == 'm' && curSkinNum <= 3 && curSkinNum >= 1)
 				{
 					skinvalid = 1;
 				}
@@ -3254,8 +3259,8 @@ void ClientOldSetSkin(edict_t *ent, char *input)
 			strcmp(set, curset))
 		{
 			color = (ent->client->ctf.teamnum == CTF_TEAM_RED) ? 'r' : 'b';
-			sprintf(skin, "%s/%s-%c%c%d", dir, curset, color, gender, num);
-			s = skin;
+			sprintf(skin, "%s/%s-%c%c%d", dir, curset, color, gender, curSkinNum);
+			currentSkinString = skin;
 		}
 	}
 	else
@@ -3267,9 +3272,9 @@ void ClientOldSetSkin(edict_t *ent, char *input)
 			gender = 'm';
 			color = (ent->client->ctf.teamnum == CTF_TEAM_RED) ? 'r' : 'b';
 			if (!(skinnum % 4))
-				num = (rand() % 3) + 1;
+				curSkinNum = (rand() % 3) + 1;
 			else
-				num = skinnum % 4;
+				curSkinNum = skinnum % 4;
 		}
 		else // female
 		{
@@ -3277,22 +3282,23 @@ void ClientOldSetSkin(edict_t *ent, char *input)
 			gender = 'f';
 			color = (ent->client->ctf.teamnum == CTF_TEAM_RED) ? 'r' : 'b';
 			if (!(skinnum % 3))
-				num = (rand() % 2) + 1;
+				curSkinNum = (rand() % 2) + 1;
 			else
-				num = skinnum % 2;
+				curSkinNum = skinnum % 2;
 		}
-		sprintf(skin, "%s/%s-%c%c%d", dir, curset, color, gender, num);
-		s = skin;
+		//gi.dprintf("curSkinNum: %d input: %s skinnum: %s\n", curSkinNum, input, skinnum);
+		sprintf(skin, "%s/%s-%c%c%d", dir, curset, color, gender, curSkinNum);
+		currentSkinString = skin;
 	}
 	
 	playernum = ent-g_edicts-1;
 	
 	// combine name and skin into a configstring
-	gi.configstring (CS_PLAYERSKINS+playernum, va("%s\\%s", ent->client->pers.netname, s) );
+	gi.configstring (CS_PLAYERSKINS+playernum, va("%s\\%s", ent->client->pers.netname, currentSkinString) );
 	
-	if (s == skin)
+	if (currentSkinString == skin)
 	{
-		Info_SetValueForKey (ent->client->pers.userinfo, "skin", s);
+		Info_SetValueForKey (ent->client->pers.userinfo, "skin", currentSkinString);
 		ent->client->ctf.goodskin = false; // We need to re-force our skin
 	}
 }

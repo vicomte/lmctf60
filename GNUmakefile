@@ -64,7 +64,7 @@ ARCH := $(shell uname -m | sed -e s/i.86/i386/ \
 #
 
 # This is for native build
-CFLAGS=-O3 -DARCH="$(ARCH)" -DSTDC_HEADERS -std=gnu99
+CFLAGS=-O3 -DARCH="$(ARCH)" -DSTDC_HEADERS# -std=gnu99
 # This is for 32-bit build on 64-bit host
 ifeq ($(ARCH),i386)
 CFLAGS =-m32 -O3 -DARCH="$(ARCH)" -DSTDC_HEADERS -I/usr/include
@@ -126,7 +126,7 @@ OBJS = $(C_OBJS) $(G_OBJS) $(M_OBJS) $(P_OBJS) $(Q_OBJS)
 
 TARGET = game$(ARCH).so
 
-CC = gcc# -std=c11
+CC = gcc -std=c11
 
 SHELL = /bin/sh
 

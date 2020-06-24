@@ -1804,6 +1804,7 @@ void Cmd_Users_f (edict_t *ent)
 	}
 }
 
+//Force a client to observer (they probably went AFK and didn't come back)
 void Cmd_Fobserve_f (edict_t *ent)
 {
 	unsigned long i=0;

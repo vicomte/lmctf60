@@ -1918,7 +1918,7 @@ always owned, never in the world
 /* icon */		"p_quad",
 /* pickup */	"Quad Damage",
 /* width */		2,
-		60,  //Quad respawn time right here
+		120,  //Quad respawn time right here
 		NULL,
 		IT_POWERUP,
 		0,

@@ -1804,6 +1804,68 @@ void Cmd_Users_f (edict_t *ent)
 	}
 }
 
+void Cmd_Fobserve_f (edict_t *ent)
+{
+	unsigned long i=0;
+	char *p;
+	edict_t * target = NULL;
+	edict_t * player = NULL;
+
+	char message[MAX_INFO_STRING];
+
+	if (!(ent->client->ctf.extra_flags & CTF_EXTRAFLAGS_REFEREE))
+	{
+		ctf_SafePrint(ent, PRINT_HIGH, "You are not a Referee\n");
+		return;
+	}
+
+	p = gi.args();
+	if (!sscanf(p, "%lu", &i))
+	{
+		ctf_SafePrint(ent, PRINT_HIGH, "Usage: fobserve <number>\nUse \"users\" to list players by number.\n");
+		return;
+	}
+
+	player = ctf_findplayer(NULL, NULL, CTF_TEAM_IGNORETEAM);
+	while (player)
+	{
+		if (player->client->ctf.ctfid == i)
+			target = player;
+
+		player = ctf_findplayer(player, NULL, CTF_TEAM_IGNORETEAM);
+	}
+
+	if (!target)
+	{
+		ctf_SafePrint(ent, PRINT_HIGH, "Couldn't find that target number.\n");
+		return;
+	}
+
+	// Can't kick a referee unless you are an rcon
+	if (target->client->ctf.extra_flags & CTF_EXTRAFLAGS_REFEREE &&
+		!(ent->client->ctf.extra_flags & CTF_EXTRAFLAGS_RCON))
+	{
+		sprintf(message, "%s is a referee.  You cannot force observer on them.\n", target->client->pers.netname);
+		ctf_SafePrint(ent, PRINT_HIGH, message);
+		return;
+	}
+
+	// Can't kick an rcon under any circumstances
+	if (target->client->ctf.extra_flags & CTF_EXTRAFLAGS_RCON)
+	{
+		sprintf(message, "%s is an rcon.  You cannot force observer on them.\n", target->client->pers.netname);
+		ctf_SafePrint(ent, PRINT_HIGH, message);
+		return;
+	}
+
+	sprintf(message, "%s was forced to observe by %s.\n", 
+		target->client->pers.netname, ent->client->pers.netname);
+	ctf_BSafePrint(PRINT_HIGH, message);
+	// clear the kicked player's stats
+	stats_clear(target);
+	ForceCommand(target, "observe\n");
+}
+
 void Cmd_Kick_f (edict_t *ent)
 {
 	unsigned long i=0;
@@ -2091,13 +2153,14 @@ void Cmd_PlayerList_f(edict_t *ent)
 		if (!e2->inuse)
 			continue;
 
-		Com_sprintf(st, sizeof(st), "%02d:%02d %4d %3d %s%s\n",
+		Com_sprintf(st, sizeof(st), "%02d:%02d %4d %3d %s%s id: %i\n",
 			(level.framenum - e2->client->resp.enterframe) / 600,
 			((level.framenum - e2->client->resp.enterframe) % 600)/10,
 			e2->client->ping,
 			e2->client->resp.score,
 			e2->client->pers.netname,
-			e2->client->resp.spectator ? " (spectator)" : "");
+			e2->client->resp.spectator ? " (spectator)" : "",
+			e2->client->ctf.ctfid);
 		if (strlen(text) + strlen(st) > sizeof(text) - 50) {
 			sprintf(text+strlen(text), "And more...\n");
 			gi.cprintf(ent, PRINT_HIGH, "%s", text);
@@ -2274,6 +2337,11 @@ void ClientCommand (edict_t *ent)
 	else if (Q_stricmp (cmd, "ctfkick") == 0)
 	{
 		Cmd_Kick_f (ent);
+		return;
+	}
+	else if (Q_stricmp (cmd, "fobserve") == 0)
+	{
+		Cmd_Fobserve_f (ent);
 		return;
 	}
 	else if (Q_stricmp (cmd, "angleinfo") == 0)

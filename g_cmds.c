@@ -1872,9 +1872,9 @@ void Cmd_QuadTime_f (edict_t *ent) {
         char *p;
         gitem_t * target = NULL;
 
-        if (!(ent->client->ctf.extra_flags & CTF_EXTRAFLAGS_REFEREE))
+        if (!(ent->client->ctf.extra_flags & (CTF_EXTRAFLAGS_REFEREE | CTF_EXTRAFLAGS_RCON)))
         {
-                ctf_SafePrint(ent, PRINT_HIGH, "You are not a Referee\n");
+                ctf_SafePrint(ent, PRINT_HIGH, "You are not a Referee or Rcon\n");
                 return;
         }
 

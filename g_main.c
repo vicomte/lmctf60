@@ -17,6 +17,8 @@ int	sm_meat_index;
 int	snd_fry;
 int meansOfDeath;
 
+int quad_respawn_time = LM_QUAD_DEFAULT_TIME;
+
 edict_t		*g_edicts;
 
 cvar_t	*deathmatch;

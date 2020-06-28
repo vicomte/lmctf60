@@ -1331,4 +1331,5 @@ struct edict_s
 	// END CTF CODE
 };
 
+#define LM_QUAD_DEFAULT_TIME 60
 #endif

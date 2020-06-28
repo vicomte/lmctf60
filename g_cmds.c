@@ -1867,6 +1867,31 @@ void Cmd_Fobserve_f (edict_t *ent)
 	ForceCommand(target, "observe\n");
 }
 
+void Cmd_QuadTime_f (edict_t *ent) {
+        unsigned long i=0;
+        char *p;
+        gitem_t * target = NULL;
+
+        if (!(ent->client->ctf.extra_flags & CTF_EXTRAFLAGS_REFEREE))
+        {
+                ctf_SafePrint(ent, PRINT_HIGH, "You are not a Referee\n");
+                return;
+        }
+
+        p = gi.args();
+        if (!sscanf(p, "%lu", &i))
+        {
+                ctf_SafePrint(ent, PRINT_HIGH, "Usage: quadtime <seconds>\n");
+                return;
+        }
+
+	target = FindItem("Quad Damage");
+	if (target && i > 0 && i < 1200) {
+		target->quantity = i;
+                ctf_SafePrint(ent, PRINT_HIGH, "Quad respawn updated\n");
+	}	
+}
+
 void Cmd_Kick_f (edict_t *ent)
 {
 	unsigned long i=0;
@@ -2343,6 +2368,11 @@ void ClientCommand (edict_t *ent)
 	else if (Q_stricmp (cmd, "fobserve") == 0)
 	{
 		Cmd_Fobserve_f (ent);
+		return;
+	}
+	else if (Q_stricmp (cmd, "quadtime") == 0) 
+	{
+		Cmd_QuadTime_f (ent);
 		return;
 	}
 	else if (Q_stricmp (cmd, "angleinfo") == 0)

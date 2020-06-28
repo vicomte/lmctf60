@@ -1060,7 +1060,8 @@ void Ref_Settings_Menu (edict_t *ent)
 	ent->client->menu = MENU_LOCAL;
 	ent->client->menuselect = 1;
 
-
+	gitem_t *quad;
+	quad = FindItem("Quad Damage");
 	Menu_Set(ent, 1, "Server Settings", Ref_Main_Menu);
 	Menu_Set(ent, 2, "---------------", NULL);
 	sprintf(text, "Timelimit:           %3d", (int)timelimit->value);	
@@ -1075,6 +1076,10 @@ void Ref_Settings_Menu (edict_t *ent)
 	Menu_Set(ent, 7, text, NULL);
 	if (ent->client->ctf.extra_flags & CTF_EXTRAFLAGS_RCON)
 		Menu_Set(ent, 8, "Clear password (RCON)", ClearPassword_Exec);
+	if (quad) {
+		sprintf(text, "Quad Time: %i", quad->quantity);
+		Menu_Set(ent, 9, text, NULL);
+	}
 	
 
 	Menu_Draw (ent);

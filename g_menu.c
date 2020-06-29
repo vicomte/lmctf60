@@ -58,6 +58,8 @@ void ClearPassword_Exec (edict_t *ent);
 void Ref_Kick_Menu (edict_t *ent);
 void RefTogglePause(edict_t *ent);
 void Ref_Map_Menu (edict_t *ent);
+void SetMapsForMenu (edict_t *ent);
+void SetupShortList ();
 void MapMenu (edict_t *ent, char *maplist[], char *msg);
 void Ref_Match_A_Menu (edict_t *ent);
 void Ref_Match_B_Menu (edict_t *ent);
@@ -79,6 +81,9 @@ extern void Observer_Start (edict_t *ent);
 void Change_Team_Exec(edict_t *ent);
 void Observe_Exec(edict_t *ent);
 void Cmd_Observe_f(edict_t *ent, int Observer_Type);
+
+
+MapInfo *shortList = NULL;	
 
 
 menuitem mainmenu[] =
@@ -1574,109 +1579,92 @@ void SetMap (edict_t *ent)
 
 void Ref_Match_Maplist_Menu (edict_t *ent)
 {
+	SetMapsForMenu(ent);
+}
+
+void Ref_Map_Maplist_Menu (edict_t *ent)
+{
+	SetMapsForMenu(ent);
+}
+
+void SetMapsForMenu( edict_t *ent) 
+{
 	char text[MAX_INFO_STRING];
-	int i,j, start;
+	int start;
+
+	SetupShortList();
+
+	MapInfo *slPtr = shortList;
 
 	// Calculate our page
 	start = 15*ent->client->menupage;
+
+	slPtr = shortList;
+	int mapCtr = 0;
+	while (slPtr) {
+		mapCtr++;
+		slPtr = slPtr->next;
+	}
 	
 	// Find if last page was the last
 	if (start > 14)
 	{
-		for (i=start-15;i < start; i++)
+		if (start + 15 >= mapCtr) 
 		{
-			if (!maplist[i].mapname) // Last entry
-			{
-				start = 0;
-		// Go to first page
-				ent->client->menupage = 0;
-			}
+			start = 0;
+			ent->client->menupage = 0;
 		}
 	}
+
+	slPtr = shortList;
+	for (int ct = 0; ct < start; ct++)
+		slPtr = slPtr->next;
 
 	Menu_Free(ent);
 	ent->client->menu = MENU_LOCAL;
 	ent->client->menuselect = 0;
 
-	Menu_Set(ent, 0, "Match Maplist <min> <max>", Ref_Main_Menu);
+	Menu_Set(ent, 0, "Maplist <min> <max>", Ref_Main_Menu);
 	Menu_Set(ent, 1, "-------------", NULL);
-	for (i=2, j=start; i < 17 && maplist[j].mapname; i++, j++)
-	{
-		sprintf(text, "%s %d %d", maplist[j].mapname, maplist[j].minplayers, maplist[j].maxplayers);
-		Menu_Set(ent, i, text, SetMap);
+
+	for (int endCtr = 2; endCtr < 18 && slPtr; endCtr++) {
+		sprintf(text, "%s %d %d", slPtr->mapname, slPtr->minplayers, slPtr->maxplayers);
+		Menu_Set(ent, endCtr, text, SetMap);
+		slPtr = slPtr->next;
 	}
+		
 	Menu_Set(ent, 17, "<next page>", Ref_Match_Maplist_Menu);
 
 	Menu_Draw (ent);
 	gi.unicast (ent, true);
 }
 
-void Ref_Map_Maplist_Menu (edict_t *ent)
+void SetupShortList() 
 {
-	char text[MAX_INFO_STRING];
-	int i,j, start;
-
-	MapInfo *shortList = NULL;	
-	MapInfo *slPtr = NULL;
-	for(int ctr = 0; maplist[ctr].mapname; ctr++) {
-		char *thisMap = maplist[ctr].mapname;
-		for(int lmNdx = 0; maplmlist[lmNdx]; lmNdx++) {
-			if (!strcmp(maplmlist[lmNdx], thisMap)) {
-				goto end;
-			}
-		}
-		if (!slPtr) 
-			shortList = slPtr = &maplist[ctr];
-		else {
-			slPtr->next = &maplist[ctr];
-			slPtr = slPtr->next;
-			slPtr->next = NULL;
-		}			
-		end:
-			continue;
-	}
-
-	if (!shortList) 
+	if (shortList) 
+	{
 		return;
-	// Calculate our page
-	start = 15*ent->client->menupage;
-	slPtr = shortList;
-	for (i=0;i<start && slPtr;i++)
-		slPtr = slPtr->next;
-		
-	// Find if last page was the last
-	if (start > 14)
-	{
-		for (i=start-15;i < start; i++)
-		{
-			
-			if (!slPtr) // Last entry
-			{
-				start = 0;			// Go to first page
-				ent->client->menupage = 0;
-			}
-		}
 	}
-
-	Menu_Free(ent);
-	ent->client->menu = MENU_LOCAL;
-	ent->client->menuselect = 0;
-
-	Menu_Set(ent, 0, "Maplist <min> <max>", ent->client->prevmenu);
-	Menu_Set(ent, 1, "-------", NULL);
-	slPtr = shortList;
-	for(i=0;i<start&&slPtr;i++)
-		slPtr = slPtr->next;
-	for (i=2, j=start; i < 17 && slPtr; i++, j++, slPtr = slPtr->next)
-	{
-		sprintf(text, "%s %d %d", slPtr->mapname, slPtr->minplayers, slPtr->maxplayers);
-		Menu_Set(ent, i, text, SetMap);
-	}
-	Menu_Set(ent, 17, "<next page>", Ref_Map_Maplist_Menu);
-
-	Menu_Draw (ent);
-	gi.unicast (ent, true);
+        MapInfo *slPtr = NULL;
+        for(int ctr = 0; maplist[ctr].mapname; ctr++) {
+                char *thisMap = maplist[ctr].mapname;
+                for(int lmNdx = 0; maplmlist[lmNdx]; lmNdx++) {
+                        if (!strcmp(maplmlist[lmNdx], thisMap)) {
+                                goto end; 
+                        }    
+                }    
+                if (!slPtr) 
+                        shortList = slPtr = &maplist[ctr];
+                else {
+                        slPtr->next = &maplist[ctr];
+                        slPtr = slPtr->next;
+                        slPtr->next = NULL;
+                }            
+                end: 
+                        continue;
+        } 
 }
+
 
 void MapMenu(edict_t *ent, char *maplist[], char *msg) 
 {

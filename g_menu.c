@@ -1077,7 +1077,12 @@ void Ref_Settings_Menu (edict_t *ent)
 	Menu_Set(ent, 5, text, Ref_DMFlags_Menu);
 	sprintf(text, "CTFFlags:          %5d", ((unsigned short)ctfflags->value));	
 	Menu_Set(ent, 6, text, Ref_CTFFlags_Menu);
-	sprintf(text, "Password: %s", password->string);
+	cvar_t *svp = gi.cvar("sv_password","",0);
+	if (svp && strlen(svp->string) > 0) {
+		sprintf(text, "sv_password: %s", svp->string);
+	} else {
+		sprintf(text, "password: %s", password->string);
+	}
 	Menu_Set(ent, 7, text, NULL);
 	if (ent->client->ctf.extra_flags & CTF_EXTRAFLAGS_RCON)
 		Menu_Set(ent, 8, "Clear password (RCON)", ClearPassword_Exec);

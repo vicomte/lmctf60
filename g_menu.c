@@ -1512,6 +1512,8 @@ void SetBMap (edict_t *ent)
 void SetMap (edict_t *ent)
 {
 	int i;
+	SetupShortList();
+	MapInfo *slPtr = shortList;
 
 	if (ent->client->prevmenu == Ref_Match_A_Menu)
 	{
@@ -1542,7 +1544,10 @@ void SetMap (edict_t *ent)
 	{
 		Ctf_Menu(ent); // turn off menu
 		i = (ent->client->menuselect - 2)+ent->client->menulastpage*15;
-		StartMatch (maplist[i].mapname);
+	 	for (int ctr = 0; ctr < i && slPtr; ctr++)
+			slPtr = slPtr->next;				
+		if (slPtr) 
+			StartMatch (slPtr->mapname);
 	}
 	else if (ent->client->prevmenu == Ref_Map_A_Menu)
 	{
@@ -1573,18 +1578,41 @@ void SetMap (edict_t *ent)
 	{
 		Ctf_Menu(ent); // turn off menu
 		i = (ent->client->menuselect - 2)+ent->client->menulastpage*15;
-		ctf_ChangeMap(maplist[i].mapname, false);
+	 	for (int ctr = 0; ctr < i && slPtr; ctr++)
+			slPtr = slPtr->next;				
+		if (slPtr) 
+			ctf_ChangeMap(slPtr->mapname, false);
 	}
 }
 
 void Ref_Match_Maplist_Menu (edict_t *ent)
 {
+	Menu_Free(ent);
+	ent->client->menu = MENU_LOCAL;
+	ent->client->menuselect = 0;
+
+	Menu_Set(ent, 0, "Match Maplist <min> <max>", Ref_Main_Menu);
+	Menu_Set(ent, 1, "-------------", NULL);
 	SetMapsForMenu(ent);
+	Menu_Set(ent, 17, "<next page>", Ref_Match_Maplist_Menu);
+
+	Menu_Draw (ent);
+	gi.unicast (ent, true);
 }
 
 void Ref_Map_Maplist_Menu (edict_t *ent)
 {
+	Menu_Free(ent);
+	ent->client->menu = MENU_LOCAL;
+	ent->client->menuselect = 0;
+
+	Menu_Set(ent, 0, "Maplist <min> <max>", Ref_Main_Menu);
+	Menu_Set(ent, 1, "-------------", NULL);
 	SetMapsForMenu(ent);
+	Menu_Set(ent, 17, "<next page>", Ref_Map_Maplist_Menu);
+
+	Menu_Draw (ent);
+	gi.unicast (ent, true);
 }
 
 void SetMapsForMenu( edict_t *ent) 
@@ -1620,23 +1648,12 @@ void SetMapsForMenu( edict_t *ent)
 	for (int ct = 0; ct < start; ct++)
 		slPtr = slPtr->next;
 
-	Menu_Free(ent);
-	ent->client->menu = MENU_LOCAL;
-	ent->client->menuselect = 0;
-
-	Menu_Set(ent, 0, "Maplist <min> <max>", Ref_Main_Menu);
-	Menu_Set(ent, 1, "-------------", NULL);
 
 	for (int endCtr = 2; endCtr < 18 && slPtr; endCtr++) {
 		sprintf(text, "%s %d %d", slPtr->mapname, slPtr->minplayers, slPtr->maxplayers);
 		Menu_Set(ent, endCtr, text, SetMap);
 		slPtr = slPtr->next;
 	}
-		
-	Menu_Set(ent, 17, "<next page>", Ref_Match_Maplist_Menu);
-
-	Menu_Draw (ent);
-	gi.unicast (ent, true);
 }
 
 void SetupShortList() 

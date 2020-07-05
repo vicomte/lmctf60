@@ -1432,7 +1432,7 @@ char *mapelist[] =
 	"lmctf46",
 	"lmctf47",
 	"lmctf48",
-	0,
+	"lmctf49",
 	0,
 	0,
 	0,
@@ -1491,7 +1491,8 @@ char *maplmlist[] =
         "lmctf45",
         "lmctf46",
         "lmctf47",
-        "lmctf48"
+        "lmctf48",
+        "lmctf49"
 };
 /*
 void SetMatchBMap (edict_t *ent)

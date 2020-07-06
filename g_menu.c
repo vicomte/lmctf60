@@ -1676,9 +1676,10 @@ void SetupShortList()
                                 goto end; 
                         }    
                 }    
-                if (!slPtr) 
+                if (!slPtr) {
                         shortList = slPtr = &maplist[ctr];
-                else {
+			slPtr->next = NULL;
+                } else {
                         slPtr->next = &maplist[ctr];
                         slPtr = slPtr->next;
                         slPtr->next = NULL;

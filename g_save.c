@@ -228,7 +228,7 @@ void InitGame (void)
 	maplist_file = gi.cvar("maplist_file", "maplist.txt", 0);  //CTF CODE -- LM_CTF
 	skin_file = gi.cvar("skin_file", "skins.ini", 0);
 	skin_debug = gi.cvar("skin_debug", "0", 0);	// for debugging team skins in SkinsReadFile
-
+	flag_init = gi.cvar("flag_init", "0", 0);	// flag spawning frame initialization.
 
 
 
@@ -297,7 +297,6 @@ void InitGame (void)
 				maplist[maplistindex].maxplayers = tempmax;
 
 				maplistindex++;
-				
 			}
 			SortMaplist(maplist, 0, maplistindex-1);
 //			maplist[maplistindex][0] = 0; // Blank last entry

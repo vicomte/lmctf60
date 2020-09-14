@@ -83,7 +83,7 @@ void Observe_Exec(edict_t *ent);
 void Cmd_Observe_f(edict_t *ent, int Observer_Type);
 
 
-MapInfo *shortList = NULL;	
+MapInfo *shortList = NULL;
 
 
 menuitem mainmenu[] =
@@ -1070,7 +1070,6 @@ void Ref_Settings_Menu (edict_t *ent)
 		sprintf(text, "Quad Time: %i", quad->quantity);
 		Menu_Set(ent, 9, text, NULL);
 	}
-	
 
 	Menu_Draw (ent);
 }
@@ -1373,7 +1372,7 @@ char *mapclist[] =
 	0
 };
 
-char *mapdlist[] = 
+char *mapdlist[] =
 {
 	0,
 	0,
@@ -1395,7 +1394,7 @@ char *mapdlist[] =
 	0
 };
 
-char *mapelist[] = 
+char *mapelist[] =
 {
 	0,
 	0,
@@ -1417,7 +1416,7 @@ char *mapelist[] =
 	0
 };
 
-char *maplmlist[] = 
+char *maplmlist[] =
 {
         "lmctf01",
         "lmctf02c",
@@ -1526,8 +1525,8 @@ void SetMap (edict_t *ent)
 		Ctf_Menu(ent); // turn off menu
 		i = (ent->client->menuselect - 2)+ent->client->menulastpage*15;
 	 	for (int ctr = 0; ctr < i && slPtr; ctr++)
-			slPtr = slPtr->next;				
-		if (slPtr) 
+			slPtr = slPtr->next;
+		if (slPtr)
 			StartMatch (slPtr->mapname);
 	}
 	else if (ent->client->prevmenu == Ref_Map_A_Menu)
@@ -1560,8 +1559,8 @@ void SetMap (edict_t *ent)
 		Ctf_Menu(ent); // turn off menu
 		i = (ent->client->menuselect - 2)+ent->client->menulastpage*15;
 	 	for (int ctr = 0; ctr < i && slPtr; ctr++)
-			slPtr = slPtr->next;				
-		if (slPtr) 
+			slPtr = slPtr->next;
+		if (slPtr)
 			ctf_ChangeMap(slPtr->mapname, false);
 	}
 }
@@ -1594,7 +1593,7 @@ void Ref_Map_Maplist_Menu (edict_t *ent)
 	Menu_Draw (ent);
 }
 
-void SetMapsForMenu( edict_t *ent) 
+void SetMapsForMenu( edict_t *ent)
 {
 	char text[MAX_INFO_STRING];
 	int start;
@@ -1612,11 +1611,11 @@ void SetMapsForMenu( edict_t *ent)
 		mapCtr++;
 		slPtr = slPtr->next;
 	}
-	
+
 	// Find if last page was the last
 	if (start > 14)
 	{
-		if (start + 15 >= mapCtr) 
+		if (start + 15 >= mapCtr)
 		{
 			start = 0;
 			ent->client->menupage = 0;
@@ -1627,6 +1626,7 @@ void SetMapsForMenu( edict_t *ent)
 	for (int ct = 0; ct < start; ct++)
 		slPtr = slPtr->next;
 
+
 	for (int endCtr = 2; endCtr < 18 && slPtr; endCtr++) {
 		sprintf(text, "%s %d %d", slPtr->mapname, slPtr->minplayers, slPtr->maxplayers);
 		Menu_Set(ent, endCtr, text, SetMap);
@@ -1634,9 +1634,9 @@ void SetMapsForMenu( edict_t *ent)
 	}
 }
 
-void SetupShortList() 
+void SetupShortList()
 {
-	if (shortList) 
+	if (shortList)
 	{
 		return;
 	}
@@ -1645,9 +1645,9 @@ void SetupShortList()
                 char *thisMap = maplist[ctr].mapname;
                 for(int lmNdx = 0; maplmlist[lmNdx]; lmNdx++) {
                         if (!strcmp(maplmlist[lmNdx], thisMap)) {
-                                goto end; 
-                        }    
-                }    
+                                goto end;
+                        }
+                }
                 if (!slPtr) {
                         shortList = slPtr = &maplist[ctr];
 			slPtr->next = NULL;
@@ -1655,14 +1655,14 @@ void SetupShortList()
                         slPtr->next = &maplist[ctr];
                         slPtr = slPtr->next;
                         slPtr->next = NULL;
-                }            
-                end: 
+                }
+                end:
                         continue;
-        } 
+        }
 }
 
 
-void MapMenu(edict_t *ent, char *maplist[], char *msg) 
+void MapMenu(edict_t *ent, char *maplist[], char *msg)
 {
 	char text[MAX_INFO_STRING];
         char title[MAX_INFO_STRING];
@@ -1673,7 +1673,7 @@ void MapMenu(edict_t *ent, char *maplist[], char *msg)
 	ent->client->menuselect = 0;
 
 	sprintf(title, "%s", msg);
-	
+
 	Menu_Set(ent, 0, title, ent->client->prevmenu);
 	Menu_Set(ent, 1, "-----------", NULL);
 	for (i=2; i < 18; i++)
@@ -1685,7 +1685,6 @@ void MapMenu(edict_t *ent, char *maplist[], char *msg)
 		}
 	}
 
-	Menu_Draw (ent);
 }
 
 void Ref_Match_A_Menu (edict_t *ent)
